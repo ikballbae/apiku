@@ -85,52 +85,41 @@ class FormController extends Controller
     }
 
     public function show(string $formSlug)
-    {
-        $user = Auth::user();
+{
+    $user = Auth::user();
 
-        if (!$user) {
-            return response()->json([
-                'message' => 'Unauthenticated.',
-            ], 401);
-        }
-
-        // Form slug validation
-        $validator = Validator::make(['slug' => $formSlug], [
-            'slug' => 'required|alpha_dash', // Ensure valid slug format
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'message' => 'Invalid form slug',
-            ], 400); // Bad request
-        }
-
-        $form = Form::where('slug', $formSlug)->first();
-
-        if (!$form) {
-            return response()->json([
-                'message' => 'Form not found',
-            ], 404);
-        }
-
-        // Check if user domain is allowed
-        $allowed = AllowedDomain::where('form_id', $form->id)
-            ->where('domain', $user->email ? explode('@', $user->email)[1] : null)
-            ->exists();
-
-        if (!$allowed) {
-            return response()->json([
-                'message' => 'Forbidden access',
-            ], 403);
-        }
-
-        $questions = Question::where('form_id', $form->id)->get();
-
-        $form->questions = $questions; // Attach questions to form object
-
-        return response()->json([
-            'message' => 'Get form success',
-            'form' => $form,
-        ], 200);
+    if (!$user) {
+        return response()->json(['message' => 'Unauthenticated.'], 401);
     }
+
+    $form = Form::where('slug', $formSlug)->with('allowedDomains')->first();
+
+    if (!$form) {
+        return response()->json(['message' => 'Form not found'], 404);
+    }
+
+    $allowed = $form->allowedDomains->where('domain', $user->email ? explode('@', $user->email)[1] : null)->count() > 0;
+
+    if (!$allowed) {
+        return response()->json(['message' => 'Forbidden access'], 403);
+    }
+
+    $questions = Question::where('form_id', $form->id)->get();
+
+    $form->questions = $questions;
+
+    return response()->json([
+        'form' => [
+            'id' => $form->id,
+            'name' => $form->name,
+            'slug' => $form->slug,
+            'description' => $form->description,
+            'limit_one_response' => $form->limit_one_response,
+            'creator_id' => $form->creator_id,
+            'allowed_domains' => $form->allowedDomains->pluck('domain')->toArray(),
+            'questions' => $questions,
+        ],
+    ], 200);
+}
+
 }
