@@ -1,32 +1,3 @@
-<style>
-    /* Add your custom styles here */
-    body {
-      font-family: sans-serif;
-      background-color: #f5f5f5;
-    }
-    .h1 {
-      font-size: 2.5rem;
-      margin-bottom: 1rem;
-    }
-    .lead {
-      font-size: 1.25rem;
-    }
-    .section-title {
-      font-weight: bold;
-      margin-top: 2rem;
-    }
-    .badge {
-      font-size: 0.8rem;
-      margin-right: 0.5rem;
-    }
-    .pre {
-      background-color: #eee;
-      padding: 1rem;
-      border-radius: 4px;
-    }
-  </style>
-</head>
-<body>
   <div class="container py-4">
     <h1 class="h1">Your Project Name</h1>
     <p class="lead">A short description of your project.</p>
