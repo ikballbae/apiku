@@ -22,6 +22,7 @@ class FormController extends Controller
             ], 401);
         }
 
+        // form creator_id = user_id
         $forms = Form::where('creator_id', $user->id)->get();
 
         return response()->json([
@@ -66,7 +67,7 @@ class FormController extends Controller
 
         $form->save();
 
-        // Save allowed domains
+        // alloweddomain = array
         $allowedDomains = [];
         foreach ($request->allowed_domains as $domain) {
             $allowedDomains[] = [
@@ -75,7 +76,7 @@ class FormController extends Controller
             ];
         }
 
-        // Insert allowed domains using bulk insert
+        // Insert allowed domains
         AllowedDomain::insert($allowedDomains);
 
         return response()->json([
@@ -92,21 +93,22 @@ class FormController extends Controller
         return response()->json(['message' => 'Unauthenticated.'], 401);
     }
 
+    // form where slug with allowedDomain
     $form = Form::where('slug', $formSlug)->with('allowedDomains')->first();
 
     if (!$form) {
         return response()->json(['message' => 'Form not found'], 404);
     }
 
+    // form allowedDomains where domain ? explode @ user email count > 0
     $allowed = $form->allowedDomains->where('domain', $user->email ? explode('@', $user->email)[1] : null)->count() > 0;
 
     if (!$allowed) {
         return response()->json(['message' => 'Forbidden access'], 403);
     }
 
+    // question where form_id = fromid
     $questions = Question::where('form_id', $form->id)->get();
-
-    $form->questions = $questions;
 
     return response()->json([
         'form' => [

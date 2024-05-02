@@ -11,11 +11,13 @@ class AuthController extends Controller
 {
     public function login(Request $request)
     {
+        // validator request all
         $usrVld = Validator::make($request->all(), [
             'email'=> 'required|email',
             'password' => 'required|min:5'
         ]);
 
+        // jika validasi gagal
         if($usrVld->fails())
         {
             return response()->json([
@@ -24,6 +26,8 @@ class AuthController extends Controller
             ],422);
         }
 
+        // auth only [email,password]
+
         if(!Auth::attempt($request->only(['email','password'])))
         {
             return response()->json([
@@ -31,6 +35,7 @@ class AuthController extends Controller
             ],401);
         }
 
+        // user where email = request email first
         $user = User::where('email', $request->email)->first();
 
         return response()->json([

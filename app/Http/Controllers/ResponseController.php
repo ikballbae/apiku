@@ -18,39 +18,24 @@ class ResponseController extends Controller
         $user = Auth::user();
 
         if (!$user) {
-            return response()->json(
-          
-                [
-                    'message' => 'Unauthenticated.',
-                ],401,);
+            return response()->json([ 'message' => 'Unauthenticated.'],401,);
         }
 
         $form = Form::where('slug', $formSlug)->first();
 
         if (!$form) {
-            return response()->json(
-                [
-                    'message' => 'Form not found',
-                ],
-                404,
-            );
+            return response()->json(['message' => 'Form not found',],404);
         }
 
         if ($form->allowedDomains->count() > 0) {
             if (!$user) {
-                return response()->json(
-                    [
-                        'message' => 'Forbidden access',
-                    ],
-                    401,
-                );
+                return response()->json(['message' => 'Forbidden access',],401);
             }
         }
 
         // Check for limit of 1 response (optional)
         if ($form->limit_responses === 1) {
-            $existingResponse = Response::where('form_id', $form->id)
-                ->where('user_id', $user->id)
+            $existingResponse = Response::where('form_id', $form->id)->where('user_id', $user->id)
                 ->exists();
 
             if ($existingResponse) {

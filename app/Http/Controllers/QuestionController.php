@@ -14,12 +14,13 @@ class QuestionController extends Controller
     {
         $user = Auth::user();
 
-        if (!$user) {
+        if(!$user){
             return response()->json([
-                'message' => 'Unauthenticated.',
-            ], 401);
+                'message' => 'Unauthenticated',
+            ], 422);
         }
 
+        // cari form berdasar slug
         $form = Form::where('slug', $formSlug)->first();
 
         if (!$form) {
@@ -28,14 +29,14 @@ class QuestionController extends Controller
             ], 404);
         }
 
-        // Check form ownership (optional)
+        // Cek jika creator_id !== user->id
         if ($form->creator_id !== $user->id) {
             return response()->json([
                 'message' => 'Forbidden access',
             ], 403);
         }
 
-        // Manual validation
+        // validator make reqquest all
         $validator = Validator::make($request->all(), [
             'name' => 'required',
             'choice_type' => 'required|in:short answer,paragraph,date,multiple choice,dropdown,checkboxes',
@@ -53,6 +54,7 @@ class QuestionController extends Controller
         $question = new Question;
         $question->name = $request->name;
         $question->choice_type = $request->choice_type;
+        // ? implode(',')
         $question->choices = $request->choices ? implode(',', $request->choices) : null;
         $question->is_required = $request->is_required;
         $question->form_id = $form->id;
@@ -65,6 +67,8 @@ class QuestionController extends Controller
         ], 200);
     }
 
+    // string formslug, int questionid
+    
     public function destroy(string $formSlug, int $questionId)
     {
         $user = Auth::user();
@@ -75,6 +79,7 @@ class QuestionController extends Controller
             ], 401);
         }
 
+        // form where slug first
         $form = Form::where('slug', $formSlug)->first();
 
         if (!$form) {
@@ -83,13 +88,14 @@ class QuestionController extends Controller
             ], 404);
         }
 
-        // Check form ownership (optional)
+        // creator_id !== user_id
         if ($form->creator_id !== $user->id) {
             return response()->json([
                 'message' => 'Forbidden access',
             ], 403);
         }
-
+        
+        //qurestion wheree id question where form id first 
         $question = Question::where('id', $questionId)->where('form_id', $form->id)->first();
 
         if (!$question) {
